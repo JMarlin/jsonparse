@@ -2,14 +2,25 @@
 #define JSONPARSE_H
 
 typedef enum {
-	Error
-} JSONResultType;
+	Error,
+	String
+} JSONNodeType;
 
 typedef struct {
-	JSONResultType type;
-	char* message;
-} JSONResult;
+	JSONNodeType type;
+} JSONNode;
 
-JSONResult JSONParse_parse(char* jsonString);
+typedef struct {
+	JSONNodeType type;
+	char* message;
+} JSONErrorNode;
+
+typedef struct {
+	JSONNodeType type;
+	char* value;
+} JSONStringNode;
+
+JSONNode* JSONParse_parse(char* jsonInput);
+void JSONParse_freeNode(JSONNode* node);
 
 #endif //JSONPARSE_H
