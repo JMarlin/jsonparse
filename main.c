@@ -3,7 +3,7 @@
 
 int main(int argc, char* argv[]) {
 
-	JSONParse_parse(testData[0]);
+	JSONResult result = JSONParse_parse(testData[0]);
 
 	return 0;
 }
