@@ -22,5 +22,6 @@ typedef struct {
 
 JSONNode* JSONParse_parse(char* jsonInput);
 void JSONParse_freeNode(JSONNode* node);
+void JSONNode_print(JSONNode* node, int indent);
 
 #endif //JSONPARSE_H
