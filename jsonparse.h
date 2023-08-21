@@ -10,16 +10,6 @@ typedef struct {
 	JSONNodeType type;
 } JSONNode;
 
-typedef struct {
-	JSONNodeType type;
-	char* message;
-} JSONErrorNode;
-
-typedef struct {
-	JSONNodeType type;
-	char* value;
-} JSONStringNode;
-
 JSONNode* JSONParse_parse(char* jsonInput);
 void JSONParse_freeNode(JSONNode* node);
 void JSONNode_print(JSONNode* node, int indent);
