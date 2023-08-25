@@ -23,26 +23,40 @@ JSONStringNode* JSONStringNode_create(char* value) {
 	return node;
 }
 
-JSONNode* JSONStringNode_tryParse(char* jsonInput) {
+JSONNodeParseResult JSONStringNode_tryParse(char* inputPosition) {
 
-	if(*jsonInput != '"') return (JSONNode*)JSONErrorNode_create(
-		"String did not begin with a double-quote" );
+	char* currentPosition = inputPosition;
 
-	jsonInput++;
+	if(*currentPosition != '"') return (JSONNodeParseResult) {
+		.node = (JSONNode*)JSONErrorNode_create(
+			"String did not begin with a double-quote" ),
+		.currentPosition = inputPosition
+	};
 
-	char* startOfStringValue = jsonInput;
+	currentPosition++;
 
-	for(; *jsonInput && *jsonInput != '"'; jsonInput++) { } 
+	char* startOfStringValue = currentPosition;
 
-	if(*jsonInput != '"') return (JSONNode*)JSONErrorNode_create(
-		"Did not encounter closing quote while parsing string" );
+	for(; *currentPosition && *currentPosition != '"'; currentPosition++) { } 
 
-	*jsonInput = 0;
+	if(*currentPosition != '"') return (JSONNodeParseResult) {
+		.node = (JSONNode*)JSONErrorNode_create(
+			"Did not encounter closing quote while parsing string" ),
+		.currentPosition = inputPosition
+	};
+
+	*currentPosition = 0;
 
 	JSONNode* stringNode = (JSONNode*)JSONStringNode_create(startOfStringValue);
 
-	if(!stringNode) return (JSONNode*)JSONErrorNode_create(
-		"Failed to allocate a string node" );
+	if(!stringNode) return (JSONNodeParseResult) {
+		.node = (JSONNode*)JSONErrorNode_create(
+			"Failed to allocate a string node" ),
+		.currentPosition = inputPosition
+	};
 
-	return stringNode;
+	return (JSONNodeParseResult) {
+		.node = stringNode,
+		.currentPosition = currentPosition + 1
+	};
 }

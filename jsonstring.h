@@ -8,7 +8,7 @@ typedef struct {
 	char* value;
 } JSONStringNode;
 
-JSONNode* JSONStringNode_tryParse(char* jsonInput);
+JSONNodeParseResult JSONStringNode_tryParse(char* jsonInput);
 JSONStringNode* JSONStringNode_create(char* value);
 void JSONStringNode_print(JSONStringNode* node, int indent);
 
