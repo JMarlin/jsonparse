@@ -1,5 +1,6 @@
 #include "jsonparse.h"
 #include "jsonstring.h"
+#include "jsonnull.h"
 #include "jsonerror.h"
 
 #include <stdlib.h>
@@ -11,6 +12,9 @@ void JSONNode_print(JSONNode* node, int indent) {
 
 	if(node->type == String)
 		JSONStringNode_print((JSONStringNode*)node, indent);
+
+	if(node->type == Null)
+		JSONNullNode_print((JSONNullNode*)node, indent);
 }
 
 JSONNodeParseResult JSONParse_consumeWhitespace(char* inputPosition) {
@@ -27,12 +31,38 @@ JSONNodeParseResult JSONParse_consumeWhitespace(char* inputPosition) {
 	};
 }
 
+JSONNodeParseResult JSONParse_tryMultiple(char* inputPosition, JSONParseFunction parseFunctions[]) {
+
+	JSONNodeParseResult result = {
+		.node = 0
+	};
+
+	for(int i = 0; parseFunctions[i] != 0; i++) {
+		
+		result = parseFunctions[i](inputPosition);
+
+		if(result.node != 0 && result.node->type != Error)
+			return result;
+	}
+
+	return result;
+}
+
+JSONNodeParseResult JSONValue_tryParse(char* inputPosition) {
+
+	return JSONParse_tryMultiple(inputPosition, (JSONParseFunction[]){
+		JSONNullNode_tryParse,
+		JSONStringNode_tryParse,
+		0
+	});
+}
+
 JSONNodeParseResult JSONElement_tryParse(char* inputPosition) {
 
 	JSONNodeParseResult parseResult =
 		JSONParse_consumeWhitespace(inputPosition);
 
-	parseResult = JSONStringNode_tryParse(parseResult.currentPosition);
+	parseResult = JSONValue_tryParse(parseResult.currentPosition);
 
 	if(!parseResult.node || parseResult.node->type == Error)
 		return parseResult;
