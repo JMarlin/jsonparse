@@ -1,7 +1,9 @@
 #include "jsonparse.h"
 #include "jsonstring.h"
 #include "jsonnull.h"
+#include "jsonbool.h"
 #include "jsonerror.h"
+#include "parseutil.h"
 
 #include <stdlib.h>
 
@@ -15,43 +17,15 @@ void JSONNode_print(JSONNode* node, int indent) {
 
 	if(node->type == Null)
 		JSONNullNode_print((JSONNullNode*)node, indent);
+
+	if(node->type == Bool)
+		JSONBoolNode_print((JSONBoolNode*)node, indent);
 }
-
-JSONNodeParseResult JSONParse_consumeWhitespace(char* inputPosition) {
-
-	if(*inputPosition == 0x20
-	|| *inputPosition == 0x0A
-	|| *inputPosition == 0x0D
-	|| *inputPosition == 0x09 )
-		return JSONParse_consumeWhitespace(inputPosition + 1);
-
-	return (JSONNodeParseResult) {
-		.node = (JSONNode*)0,
-		.currentPosition = inputPosition
-	};
-}
-
-JSONNodeParseResult JSONParse_tryMultiple(char* inputPosition, JSONParseFunction parseFunctions[]) {
-
-	JSONNodeParseResult result = {
-		.node = 0
-	};
-
-	for(int i = 0; parseFunctions[i] != 0; i++) {
-		
-		result = parseFunctions[i](inputPosition);
-
-		if(result.node != 0 && result.node->type != Error)
-			return result;
-	}
-
-	return result;
-}
-
 JSONNodeParseResult JSONValue_tryParse(char* inputPosition) {
 
-	return JSONParse_tryMultiple(inputPosition, (JSONParseFunction[]){
+	return ParseUtil_tryMultiple(inputPosition, (JSONParseFunction[]) {
 		JSONNullNode_tryParse,
+		JSONBoolNode_tryParse,
 		JSONStringNode_tryParse,
 		0
 	});
@@ -60,7 +34,7 @@ JSONNodeParseResult JSONValue_tryParse(char* inputPosition) {
 JSONNodeParseResult JSONElement_tryParse(char* inputPosition) {
 
 	JSONNodeParseResult parseResult =
-		JSONParse_consumeWhitespace(inputPosition);
+		ParseUtil_consumeWhitespace(inputPosition);
 
 	parseResult = JSONValue_tryParse(parseResult.currentPosition);
 
@@ -68,7 +42,7 @@ JSONNodeParseResult JSONElement_tryParse(char* inputPosition) {
 		return parseResult;
 
 	JSONNodeParseResult endWhitespaceParseResult =
-		JSONParse_consumeWhitespace(parseResult.currentPosition);
+		ParseUtil_consumeWhitespace(parseResult.currentPosition);
 
 	if(!endWhitespaceParseResult.currentPosition || *endWhitespaceParseResult.currentPosition != 0) {
 

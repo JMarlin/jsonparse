@@ -4,7 +4,8 @@
 typedef enum {
 	Error,
 	String,
-	Null
+	Null,
+	Bool
 } JSONNodeType;
 
 typedef struct {
